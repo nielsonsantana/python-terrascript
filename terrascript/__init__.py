@@ -216,6 +216,7 @@ class Terrascript(dict):
         """Add to the configuration using the ``+`` syntax."""
 
         self += object
+        return object
 
     def _recursive_merge(self, dct, merge_dct):
         """Recursive dict merge. Inspired by :meth:``dict.update()``, instead of
