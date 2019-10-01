@@ -1,0 +1,45 @@
+{
+  "variable": {
+    "access_key": {
+      "default": ""
+    },
+    "secret_key": {
+      "default": ""
+    }
+  },
+  "provider": {
+    "aws": [
+      {
+        "region": "us-east-1"
+      },
+      {
+        "region": "us-east-2",
+        "alias": "useast2"
+      }
+    ]
+  },
+  "data": {
+    "aws_ami": {
+      "example": {
+        "most_recent": true,
+        "owners": [
+          "self"
+        ],
+        "tags": {
+          "Name": "app-server2",
+          "Tested": "true"
+        }
+      },
+      "example2": {
+        "most_recent": true,
+        "owners": [
+          "self"
+        ],
+        "tags": {
+          "Name": "app-server",
+          "Tested": "true"
+        }
+      }
+    }
+  }
+}

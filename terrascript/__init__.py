@@ -5,7 +5,7 @@ Base classes and functions that are used everywhere else in
 this project.
 
 """
-
+import collections
 import logging
 import warnings
 import json
@@ -109,7 +109,8 @@ class Block(dict):
         if attr == 'name':
             keys = list(self.keys())
             if len(keys) > 1:
-                raise AttributeError('{} has no name'.format(self.__class__.__name__))
+                raise AttributeError(
+                    '{} has no name'.format(self.__class__.__name__))
             else:
                 return keys[0]
 
@@ -216,6 +217,43 @@ class Terrascript(dict):
 
         self += object
 
+    def _recursive_merge(self, dct, merge_dct):
+        """Recursive dict merge. Inspired by :meth:``dict.update()``, instead of
+        updating only top-level keys, dict_merge recurses down into dicts nested
+        to an arbitrary depth, updating keys. The ``merge_dct`` is merged into
+        ``dct``.
+
+        :param dct: dict onto which the merge is executed
+        :param merge_dct: dct merged into dct
+        :return: updated dict
+
+        Example:
+            ts1 = terrascript.Terrascript()
+            ts1.add(provider.aws(region='us-east-1'))
+
+            ts2 = terrascript.Terrascript()
+            ts2.add(provider.aws(region='us-east-2', alias='useast2'))
+
+            ts1.update(ts2) # ts1 is now merged with ts2 items
+        """
+
+        for k, v in merge_dct.items():
+            if isinstance(dct.get(k), dict) and isinstance(v, collections.abc.Mapping):
+                self._recursive_merge(dct[k], merge_dct[k])
+            else:
+                if k in dct and isinstance(dct[k], list):
+                    all_items = dct[k] + merge_dct[k]
+                    used = []
+                    [used.append(x) for x in all_items if x not in used]
+                    dct[k] = used
+                else:
+                    dct[k] = merge_dct[k]
+
+        return dct
+
+    def merge(self, terrascript_block):
+        return self._recursive_merge(self, terrascript_block)
+
 
 class Resource(Block):
     """Terraform resource block."""
@@ -263,6 +301,7 @@ class Provider(Block):
 
 
 class Variable(Block):
+
     def __init__(self, name, **kwargs):
         super().__init__()
         self[name] = Block(**kwargs)
@@ -281,6 +320,7 @@ class Module(Block):
 
 
 class Output(Block):
+
     def __init__(self, name, **kwargs):
         super().__init__()
         self[name] = Block(**kwargs)
@@ -320,6 +360,7 @@ class Terraform(Block):
 
 
 class Locals(Block):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -331,6 +372,7 @@ class Function(Block):
 # Lower case classes for backwards will be deprecated in the future(???)
 
 class module(Module):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -338,6 +380,7 @@ class module(Module):
 
 
 class data(Data):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -345,6 +388,7 @@ class data(Data):
 
 
 class resource(Resource):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -352,6 +396,7 @@ class resource(Resource):
 
 
 class variable(Variable):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -359,6 +404,7 @@ class variable(Variable):
 
 
 class provider(Provider):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -366,6 +412,7 @@ class provider(Provider):
 
 
 class output(Output):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -373,6 +420,7 @@ class output(Output):
 
 
 class provisioner(Provisioner):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -380,6 +428,7 @@ class provisioner(Provisioner):
 
 
 class connection(Connection):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -387,6 +436,7 @@ class connection(Connection):
 
 
 class backend(Backend):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -394,6 +444,7 @@ class backend(Backend):
 
 
 class terraform(Terraform):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
@@ -401,6 +452,7 @@ class terraform(Terraform):
 
 
 class function(Function):
+
     def __init__(self, *args, **kwargs):
         warnings.warn("'{}' will be deprecated in the future, please use '{}' instead".format(
             self.__class__.__name__, self.__class__.__name__.title()), PendingDeprecationWarning)
